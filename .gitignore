@@ -1,0 +1,9 @@
+*.pyc
+data/
+__pycache__/
+snapshots/
+expreiment/
+*.pth
+runs/
+SUBMISSION*
+venv/

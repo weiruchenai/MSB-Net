@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="fad59bf1-de18-4df1-a9ee-ed7ef7ee3d96" name="wdc">
+        <fileTransfer rootFolder="/home/wdc" accessType="SFTP" host="10.12.17.163" port="22" sshConfigId="09daab82-c53f-4144-badf-3ccbc15301c9" sshConfig="wdc@10.12.17.163:22 password">
+          <advancedOptions>
+            <advancedOptions controlEncoding="UTF-8" dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
