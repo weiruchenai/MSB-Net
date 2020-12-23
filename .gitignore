@@ -1,4 +1,5 @@
 *.pyc
+.idea/
 data/
 __pycache__/
 snapshots/
