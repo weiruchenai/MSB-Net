@@ -323,10 +323,10 @@ class RSU4F(nn.Module):  # UNet04FRES(nn.Module):
 
 
 # U^2-Net
-class U2NET(nn.Module):
+class U2NET_plus(nn.Module):
 
     def __init__(self, n_channels=3, n_classes=1, bilinear = False):
-        super(U2NET, self).__init__()
+        super(U2NET_plus, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.bilinear = bilinear
@@ -346,9 +346,17 @@ class U2NET(nn.Module):
         self.stage5 = RSU4F(out_ch=2048, mid_ch=32, in_ch=1024)
         self.pool56 = nn.MaxPool2d(2, stride=2, ceil_mode=True)
 
+        # ---- Squeeze&Excited module ----
+        self.squeeze_excite0 = DSqueeze_Excite_Block(128)
+        self.squeeze_excite1 = DSqueeze_Excite_Block(256)
+        self.squeeze_excite2 = DSqueeze_Excite_Block(512)
+        self.squeeze_excite3 = DSqueeze_Excite_Block(1024)
+        self.squeeze_excite4 = DSqueeze_Excite_Block(2048)
+        self.aspp_bridge = MASPP(2048, 2048)
+
         # self.rfb2_1 = RFB_modified(512,32)
         # self.rfb3_1 = RFB_modified(1024,32)
-        self.rfb4_1 = RFB_modified(3072,512)
+        # self.rfb4_1 = RFB_modified(3072,512)
 
         self.msr = MSR(2048, 32, 5)
 
@@ -378,36 +386,42 @@ class U2NET(nn.Module):
 
     def forward(self, x):
         hx = x
-
         # stage 1
         hx1 = self.stage1(hx)
         hx1 = self.pool12(hx1)
+        hx1 = self.squeeze_excite0(hx1)
         # stage 2
         hx2 = self.stage2(hx1)
         hx2 = self.pool23(hx2)
+        hx2 = self.squeeze_excite1(hx2)
 
         # stage 3
         hx3 = self.stage3(hx2)
         hx3 = self.pool34(hx3)
+        hx3 = self.squeeze_excite2(hx3)
 
         # stage 4
         hx4 = self.stage4(hx3)
         hx4 = self.pool45(hx4)
+        hx4 = self.squeeze_excite3(hx4)
 
         # stage 5
         hx5 = self.stage5(hx4)
         hx5 = self.pool56(hx5)
+        hx5 = self.squeeze_excite4(hx5)
 
-        ra5_feat = self.msr(hx5)
-        beforeSA = ra5_feat
+        # x2_rfb = self.rfb2_1(hx3)  # channel -> 32
+        # x3_rfb = self.rfb3_1(hx4)  # channel -> 32
+        # x4_rfb = self.rfb4_1(hx5)  # channel -> 32
+        x4_rfb = self.aspp_bridge(hx5)
+
+        ra5_feat = self.msr(x4_rfb)
         # print('ra5_feat',ra5_feat.shape)
-        # ra2 = F.interpolate(hx2, scale_factor=0.125, mode="bilinear")
-        # ra5_feat = self.SA(ra5_feat.sigmoid(), ra2)
-        #
-        # ra5_feat = self.ra_conv(ra5_feat)
-        afterSA = ra5_feat
+        ra2 = F.interpolate(hx2, scale_factor=0.125, mode="bilinear")
+        ra5_feat = self.SA(ra5_feat.sigmoid(), ra2)
+
+        ra5_feat = self.ra_conv(ra5_feat)
         lateral_map_5 = F.interpolate(ra5_feat, scale_factor=32, mode="bilinear")
-        SAUp = lateral_map_5
 
         # print('lateral_map_5',lateral_map_5.shape)
 
@@ -454,7 +468,77 @@ class U2NET(nn.Module):
                                       mode='bilinear')  # NOTES: Sup-4 (bs, 1, 44, 44) -> (bs, 1, 352, 352)
         # print('lateral_map_2', lateral_map_2.shape)
 
-        return lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, beforeSA, afterSA, SAUp
+        return lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2
+
+
+class DSqueeze_Excite_Block(nn.Module):
+    def __init__(self, channel, reduction=16):
+        super(DSqueeze_Excite_Block, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(channel, channel // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel, bias=False),
+            nn.Sigmoid(),
+
+            nn.Linear(channel, channel // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel, bias=False),
+            nn.Sigmoid(),
+        )
+
+    def forward(self, x):
+        b, c, _, _ = x.size()
+        y = self.avg_pool(x).view(b, c)
+        y = self.fc(y).view(b, c, 1, 1)
+        return x * y.expand_as(x)
+
+
+class MASPP(nn.Module):
+    def __init__(self, in_dims, out_dims, rate=[6, 12, 18]):
+        super(MASPP, self).__init__()
+
+        self.aspp_block1 = nn.Sequential(
+            nn.Conv2d(
+                in_dims, out_dims, 3, stride=1, padding=rate[0], dilation=rate[0]
+            ),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(out_dims),
+        )
+        self.aspp_block2 = nn.Sequential(
+            nn.Conv2d(
+                in_dims, out_dims, 3, stride=1, padding=rate[1], dilation=rate[1]
+            ),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(out_dims),
+        )
+        self.aspp_block3 = nn.Sequential(
+            nn.Conv2d(
+                in_dims, out_dims, 3, stride=1, padding=rate[2], dilation=rate[2]
+            ),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(out_dims),
+        )
+
+        self.output = nn.Conv2d(len(rate) * out_dims, out_dims, 1)
+        self._init_weights()
+
+    def forward(self, x):
+        x1 = self.aspp_block1(x)
+        x2 = self.aspp_block2(x)
+        x2 = x2 * x1
+        x3 = self.aspp_block3(x)
+        x3 = x3 * x2
+        out = torch.cat([x1, x2, x3], dim=1)
+        return self.output(out)
+
+    def _init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight)
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
 
 
 class BasicResBlock(nn.Module):

@@ -1,6 +1,8 @@
 import torch
 import torch.nn.functional as F
 from tqdm import tqdm
+from lib import U2PraNet_plus_plus, PraNet_plus_plus, PraNet, U2NET, U2NET_plus
+from utils.dataloader import get_test_loader
 
 from dice_loss import dice_coeff
 
@@ -34,3 +36,18 @@ def eval_net(net, loader, device, network_name):
 
     net.train()
     return tot / n_val
+
+
+if __name__ == '__main__':
+    # data_name in ['CVC-300', 'CVC-ClinicDB', 'Kvasir', 'CVC-ColonDB', 'ETIS-LaribPolypDB']:
+    image_root = 'data/PolypData/test/ETIS-LaribPolypDB/imgs/'
+    gt_root = 'data/PolypData/test/ETIS-LaribPolypDB/masks/'
+    # model = U2PraNet_plus_plus().cuda()
+    # model = PraNet_plus_plus().cuda()
+    # model = PraNet().cuda()
+    # model = U2NET_plus().cuda()
+    model = U2PraNet_plus_plus().cuda()
+    model.load_state_dict(torch.load('snapshots/archive/U2PraNet++-69.pth'))
+    test_loader = get_test_loader(image_root, gt_root)
+    test_dice = eval_net(model, test_loader, 'cuda', '4returns')
+    print(test_dice)

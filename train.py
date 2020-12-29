@@ -7,7 +7,7 @@ import torch.nn.functional as F
 
 from datetime import datetime
 from torch.autograd import Variable
-from lib import PraNet, PraNet_plus_plus, U2PraNet_plus_plus, U2NET
+from lib import PraNet, PraNet_plus_plus, U2PraNet_plus_plus, U2NET, U2NET_plus
 from utils.dataloader import get_loader
 from eval import eval_net
 from utils.utils import clip_gradient, adjust_lr, AvgMeter
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     parser = argparse.ArgumentParser()
     parser.add_argument('--epoch', type=int,
-                        default=100, help='epoch number')
+                        default=60, help='epoch number')
     parser.add_argument('--lr', type=float,
                         default=1e-4, help='learning rate')
     parser.add_argument('--batchsize', type=int,
@@ -100,10 +100,12 @@ if __name__ == '__main__':
     parser.add_argument('--train_path', type=str,
                         default='./data/PolypData/', help='path to train dataset')
     parser.add_argument('--train_save', type=str,
-                        default='U2PraNet++')
+                        default='U2PraNet(NoSEASPP)')
     parser.add_argument('-n', '--network', metavar='N', type=str, default="U2PraNet_plus_plus",
                         help='choice of network: U_Net, R2U_Net, AttU_Net, R2AttU_Net, NestedUNet, ResUnetPlusPlus, '
-                             'PraNet_plus, PraNet_plus_plus, U2Net, U2PraNet_plus_plus ', dest='network')
+                             'PraNet, PraNet_plus_plus, U2Net, U2NET_plus, U2PraNet_plus_plus', dest='network')
+    parser.add_argument('-f', '--load', dest='load', type=str, default=False,
+                        help='Load model from a .pth file')
     opt = parser.parse_args()
 
     # ---- build models ----
@@ -122,14 +124,20 @@ if __name__ == '__main__':
     #     model = NestedUNet(n_channels=3, n_classes=1, bilinear=False).cuda()
     # if opt.network == 'ResUnetPlusPlus':
     #     model = ResUnetPlusPlus(n_channels=3, n_classes=1, bilinear=False).cuda()
-    if opt.network == 'PraNet_plus':
+    if opt.network == 'PraNet':
         model = PraNet().cuda()
     if opt.network == 'PraNet_plus_plus':
         model = PraNet_plus_plus().cuda()
     if opt.network == 'U2Net':
         model = U2NET().cuda()
+    if opt.network == 'U2NET_plus':
+        model = U2NET_plus().cuda()
     if opt.network == 'U2PraNet_plus_plus':
         model = U2PraNet_plus_plus().cuda()
+
+    if opt.load:
+        model.load_state_dict(torch.load(opt.load))
+        logging.info(f'Model loaded from {opt.load}')
 
     # ---- flops and params ----
     # from utils.utils import CalParams
@@ -160,6 +168,7 @@ if __name__ == '__main__':
         Learning rate:   {opt.lr}
         Training size:   {n_train}
         Validation size: {n_val}
+        Image size:      {opt.trainsize}
     ''')
     global_step = 0
     for epoch in range(1, opt.epoch):

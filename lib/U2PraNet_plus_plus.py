@@ -60,7 +60,6 @@ class U2PraNet_plus_plus(nn.Module):
         self.ra2_conv3 = BasicConv2d(64, 64, kernel_size=3, padding=1)
         self.ra2_conv4 = BasicConv2d(64, 1, kernel_size=3, padding=1)
 
-
     def forward(self, x):
         hx = x
         # stage 1
@@ -94,12 +93,19 @@ class U2PraNet_plus_plus(nn.Module):
 
         ra5_feat = self.agg1(x4_rfb, x3_rfb, x2_rfb)
 
+        before_SA = ra5_feat
+        s = ra5_feat.sigmoid()
+        before_SA2 = F.interpolate(ra5_feat, scale_factor=8, mode='bilinear')
         ra2 = F.interpolate(hx2, scale_factor=0.5, mode="bilinear")
         ra5_feat = self.SA(ra5_feat.sigmoid(), ra2)
         ra5_feat = self.ra_conv(ra5_feat)
+        after_SA = ra5_feat
+        ra5_feat = ra5_feat + before_SA
+        SA_add = ra5_feat
 
         lateral_map_5 = F.interpolate(ra5_feat, scale_factor=8,
                                       mode='bilinear')  # Sg NOTES: Sup-1 (bs, 1, 44, 44) -> (bs, 1, 352, 352)
+        after_SA2 = lateral_map_5
         Sg = lateral_map_5
         # ---- reverse attention branch_4 ----
         crop_4 = F.interpolate(ra5_feat, scale_factor=0.25, mode='bilinear')
@@ -145,8 +151,8 @@ class U2PraNet_plus_plus(nn.Module):
                                       mode='bilinear')  # 最终结果，NOTES: Sup-4 (bs, 1, 44, 44) -> (bs, 1, 352, 352)
 
         # 返回四个与原始图片相同大小的map
-        return lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2
-        # return Sg, R5, S5, R4, S4, R3, S3, lateral_map_2
+        return lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2#, before_SA, after_SA, SA_add
+        # return Sg, R5, S5, crop_4, R4, S4, crop_3, R3, S3, crop_2, lateral_map_2
 
 
 class BasicConv2d(nn.Module):
