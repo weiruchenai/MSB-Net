@@ -151,7 +151,7 @@ class U2PraNet_plus_plus(nn.Module):
                                       mode='bilinear')  # 最终结果，NOTES: Sup-4 (bs, 1, 44, 44) -> (bs, 1, 352, 352)
 
         # 返回四个与原始图片相同大小的map
-        return lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2#, before_SA, after_SA, SA_add
+        return lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2  # , before_SA, after_SA, SA_add
         # return Sg, R5, S5, crop_4, R4, S4, crop_3, R3, S3, crop_2, lateral_map_2
 
 

@@ -7,7 +7,7 @@ from utils.dataloader import get_test_loader
 from dice_loss import dice_coeff
 
 
-def eval_net(net, loader, device, network_name):
+def eval_net(net, loader, device, return_num):
     """Evaluation without the densecrf with the dice coefficient"""
     net.eval()
     mask_type = torch.float32 if net.n_classes == 1 else torch.long
@@ -21,7 +21,7 @@ def eval_net(net, loader, device, network_name):
             true_masks = true_masks.to(device=device, dtype=mask_type)
 
             with torch.no_grad():
-                if network_name == '4returns':
+                if return_num == 4:
                     masks_pred_4, masks_pred_3, masks_pred_2, masks_pred = net(imgs)
                 else:
                     masks_pred = net(imgs)
