@@ -1,33 +1,43 @@
-## My Image Segmentation
-### Including
+## MSN-Net
+### Structure
 
-Unet
+<img src="C:\Users\DC Wang\Desktop\Temp\图床图片\MSB-Net.png" style="zoom:75%;" />
 
-![U-Net.png](./imgs/U-Net.png)
+### Metrics
+
+<img src="C:\Users\DC Wang\Desktop\Temp\图床图片\Metrics.png" style="zoom:75%;" />
+
+### Results
+
+<img src="C:\Users\DC Wang\Desktop\Temp\图床图片\Results.png" style="zoom:75%;" />
+
+<!-- Unet
+
+<img src="./imgs/U-Net.png" alt="U-Net.png" style="zoom:67%;" />
 
 R2Unet
 
-![R2U-Net.png](./imgs/R2U-Net.png)
+<img src="./imgs/R2U-Net.png" alt="R2U-Net.png" style="zoom:67%;" />
 
 AttentionUnet
 
-![AttentionUnet](./imgs/AttU-Net.png)
+<img src="./imgs/AttU-Net.png" alt="AttentionUnet" style="zoom:67%;" />
 
 R2AttenUnet
 
-![R2AttenUnet](./imgs/AttR2U-Net.png)
+<img src="./imgs/AttR2U-Net.png" alt="R2AttenUnet" style="zoom:67%;" />
 
 Unet++
 
-![Unet++](./imgs/Unet++.jpg)
+<img src="./imgs/Unet++.jpg" alt="Unet++" style="zoom:67%;" />
 
 PraNet
 
-![PraNet](./imgs/PraNet.png)
+<img src="./imgs/PraNet.png" alt="PraNet" style="zoom:67%;" />
 
 PraNet++
 
-![PraNet++](./imgs/PraNet++.png)
+<img src="./imgs/PraNet++.png" alt="PraNet++" style="zoom:67%;" />
 
 ## CVC ClinicDB
 
@@ -83,4 +93,4 @@ U2PraNet++:
 Dice = 0.606
 
 PraNet:
-Dice = 0.458
+Dice = 0.458 -->
