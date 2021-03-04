@@ -1,7 +1,7 @@
 ## MSN-Net
 ### Structure
 
-![](C:\Users\DC Wang\Desktop\Temp\图床图片\MSB-Net-1614848807963.png)
+![](imgs\MSB-Net-1614848807963.png)
 
 ### Metrics
 
