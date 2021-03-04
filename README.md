@@ -36,7 +36,7 @@ PraNet
 <img src="./imgs/PraNet.png" alt="PraNet" style="zoom:67%;" />
 
 PraNet++
-
+ 
 <img src="./imgs/PraNet++.png" alt="PraNet++" style="zoom:67%;" />
 
 ## CVC ClinicDB
