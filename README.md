@@ -1,15 +1,15 @@
 ## MSN-Net
 ### Structure
 
-![](imgs\MSB-Net.png)
+![](./imgs/MSB-Net.png)
 
 ### Metrics
 
-![](imgs\Metrics.png)
+![](./imgs/Metrics.png)
 
 ### Results
 
-![](imgs\Results.png)
+![](./imgs/Results.png)
 
 <!-- Unet
 
