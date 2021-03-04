@@ -1,15 +1,15 @@
 ## MSN-Net
 ### Structure
 
-![](imgs\MSB-Net-1614848807963.png)
+![](imgs\MSB-Net.png)
 
 ### Metrics
 
-![](C:\Users\DC Wang\Desktop\Temp\图床图片\Metrics-1614848818733.png)
+![](imgs\Metrics.png)
 
 ### Results
 
-![](C:\Users\DC Wang\Desktop\Temp\图床图片\Results-1614848829183.png)
+![](imgs\Results.png)
 
 <!-- Unet
 
